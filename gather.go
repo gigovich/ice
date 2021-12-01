@@ -354,11 +354,17 @@ func (a *Agent) gatherCandidatesSrflx(ctx context.Context, urls []*URL, networkT
 					return
 				}
 
-				conn, err := listenUDPInPortRange(a.net, a.log, int(a.portmax), int(a.portmin), network, &net.UDPAddr{IP: nil, Port: 0})
+				conn, err := a.udpMux.GetConn(a.localUfrag)
 				if err != nil {
 					closeConnAndLog(conn, a.log, fmt.Sprintf("Failed to listen for %s: %v\n", serverAddr.String(), err))
 					return
 				}
+
+				/*conn, err := listenUDPInPortRange(a.net, a.log, int(a.portmax), int(a.portmin), network, &net.UDPAddr{IP: nil, Port: 0})
+				if err != nil {
+					closeConnAndLog(conn, a.log, fmt.Sprintf("Failed to listen for %s: %v\n", serverAddr.String(), err))
+					return
+				}*/
 
 				xoraddr, err := getXORMappedAddr(conn, serverAddr, stunGatherTimeout)
 				if err != nil {
