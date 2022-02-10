@@ -125,7 +125,7 @@ type Agent struct {
 	net         *vnet.Net
 	tcpMux      TCPMux
 	udpMux      UDPMux
-	udpMuxSrflx UDPMux
+	udpMuxSrflx UDPMuxSrflx
 
 	interfaceFilter func(string) bool
 

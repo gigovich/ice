@@ -1,7 +1,6 @@
 package ice
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net"
@@ -19,6 +18,12 @@ type UDPMux interface {
 	io.Closer
 	GetConn(ufrag string) (net.PacketConn, error)
 	RemoveConnByUfrag(ufrag string)
+}
+
+// UDPMuxSrflx allows multiple connections to go over a single UDP port for
+// server reflexive candidates.
+type UDPMuxSrflx interface {
+	UDPMux
 	GetXORMappedAddr(serverAddr net.Addr, deadline time.Duration) (*stun.XORMappedAddress, error)
 }
 
@@ -237,7 +242,7 @@ func (m *UDPMuxDefault) handleXORMappedResponse(stunAddr *net.UDPAddr, msg *stun
 
 	mappedAddr, ok := m.xorMappedAddr[stunAddr.String()]
 	if !ok {
-		return fmt.Errorf("no address map for %s", stunAddr.String())
+		return fmt.Errorf("no address map for %v", stunAddr)
 	}
 
 	var addr stun.XORMappedAddress
@@ -343,7 +348,7 @@ func isRemotePing(msg *stun.Message) bool {
 func (m *UDPMuxDefault) GetXORMappedAddr(serverAddr net.Addr, deadline time.Duration) (*stun.XORMappedAddress, error) {
 	m.mu.Lock()
 	mappedAddr, ok := m.xorMappedAddr[serverAddr.String()]
-	// if we already have a mapping for this STUN server (address already recieved)
+	// if we already have a mapping for this STUN server (address already received)
 	// and if it is not too old we return it without making a new request to STUN server
 	if ok {
 		if mappedAddr.expired() {
@@ -424,7 +429,6 @@ func newBufferHolder(size int) *bufferHolder {
 }
 
 type xorAddrMap struct {
-	ctx              context.Context
 	addr             *stun.XORMappedAddress
 	waitAddrReceived chan struct{}
 	expiresAt        time.Time

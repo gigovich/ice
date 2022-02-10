@@ -276,7 +276,9 @@ func testMuxSrflxConnection(t *testing.T, udpMux *UDPMuxDefault, ufrag string, n
 		IP:   testXORIP,
 		Port: testXORPort,
 	}
-	addr.AddTo(msg)
+	err = addr.AddTo(msg)
+	require.NoError(t, err)
+
 	msg.Encode()
 	_, err = remoteConn.Write(msg.Raw)
 	require.NoError(t, err)
